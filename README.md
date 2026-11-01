@@ -22,7 +22,16 @@ claude plugin install clawd-rtl --marketplace itsomidho/claude-plugins
 
 ## Terminal setup
 
-clawd-rtl is made for VTE terminals (Guake, GNOME Terminal, Tilix, Terminator), which join Persian and Arabic letters and turn each right-to-left run themselves. Two things make it look right:
+clawd-rtl is made for VTE terminals (Guake, GNOME Terminal, Tilix, Terminator), which join Persian and Arabic letters and turn each right-to-left run themselves.
+
+**The quick way:** [`extras/setup.sh`](extras/setup.sh) does all of it on Linux: installs or updates the plugin, installs Vazir Code and makes it the fallback for your terminal's font (Guake's or GNOME Terminal's), and for fish adds the wrapper below and turns on direction detection in the shell. It checks before each step, so it is safe to run again, and backs up any file it changes (`<file>.bak-clawd-rtl`):
+
+```
+curl -fsSLo /tmp/clawd-rtl-setup.sh https://raw.githubusercontent.com/itsomidho/clawd-rtl/main/extras/setup.sh
+bash /tmp/clawd-rtl-setup.sh            # or --no-shell to leave fish alone
+```
+
+Or by hand, two things make it look right:
 
 **1. A monospaced Persian font.** Without one, letters fall back to a font that does not fit the terminal's cells and show with gaps between them. [Vazir Code](https://github.com/rastikerdar/vazir-code-font) is made for terminals. Install it, then make it the fallback for your terminal font in `~/.config/fontconfig/fonts.conf` (replace `FiraCode Nerd Font` with the font your terminal uses):
 
