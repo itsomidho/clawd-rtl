@@ -11,8 +11,10 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="row" width="100%">
-        <Text>{e.props.isFirstOfReply ? '● ' : '  '}</Text>
-        <Client key="rtl" module="./rtl.tsx" props={{ text: e.props.text }} flexGrow={1} />
+        <Box flexShrink={0} width={2}>
+          <Text>{e.props.isFirstOfReply ? '●' : ' '}</Text>
+        </Box>
+        <Client key="rtl" module="./rtl.tsx" props={{ text: e.props.text, max: (e.viewport?.columns ?? 200) - 2 }} flexGrow={1} />
       </Box>
     )
   })
@@ -27,8 +29,10 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="row" width="100%">
-        <Text dimColor>{'❯ '}</Text>
-        <Client key="rtl" module="./rtl.tsx" props={{ text: e.props.text, plain: true }} flexGrow={1} />
+        <Box flexShrink={0} width={2}>
+          <Text dimColor>❯</Text>
+        </Box>
+        <Client key="rtl" module="./rtl.tsx" props={{ text: e.props.text, plain: true, max: (e.viewport?.columns ?? 200) - 2 }} flexGrow={1} />
       </Box>
     )
   })

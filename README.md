@@ -2,6 +2,8 @@
 
 Persian, Arabic and Hebrew in Claude Code read right to left. Claude's replies and your own prompts that hold right-to-left text start on the right of the chat column, with English words, numbers, lists, headings and tables in their right places. Side panels beside the conversation (like [clawd-git](https://github.com/itsomidho/clawd-git)) stay where they are.
 
+![clawd-rtl in a real session: a prompt in Persian and Claude's Persian reply, both flush right and read right to left, with src/cart.js, the numbered list and a table in their places](docs/rtl.gif)
+
 Part of the [clawd mods](https://github.com/itsomidho/claude-plugins).
 
 ## Install
@@ -41,6 +43,10 @@ clawd-rtl is made for VTE terminals (Guake, GNOME Terminal, Tilix, Terminator), 
 Run `fc-cache -f` and restart the terminal (quit it fully; a new tab is not enough).
 
 **2. The terminal's own direction detection off while Claude Code runs.** If you turned it on (`printf '\e[?2501h'`, so shell lines starting with Persian read right to left), the terminal flips each whole row, side panel included. For fish, [`extras/claude.fish`](extras/claude.fish) turns it off while `claude` runs and back on after; copy it to `~/.config/fish/functions/`. If you never turned it on, there is nothing to do.
+
+## Use
+
+There is nothing to turn on: once installed, every message that holds Persian, Arabic or Hebrew is drawn right to left, Claude's replies and the prompts you send alike. Messages with no right-to-left text, tool output and code blocks are drawn by Claude Code as always. To stop it, disable the plugin in `/plugin`.
 
 ## How it works
 

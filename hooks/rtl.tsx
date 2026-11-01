@@ -229,31 +229,44 @@ function table(rows: string[], w: number): Line[] {
     .map(r => r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => inline(c.trim())))
   const cols = Math.max(...cells.map(r => r.length))
   const ws = Array.from({ length: cols }, (_, c) => Math.max(1, ...cells.map(r => width(r[c] ?? []))))
+  // Too wide for the column: narrow the widest cell column until it fits;
+  // its text wraps onto more lines.
+  const room = w - 1 - (3 * cols + 1)
+  while (ws.reduce((n, x) => n + x, 0) > room) {
+    const i = ws.indexOf(Math.max(...ws))
+    if (ws[i]! <= 4) break
+    ws[i] = ws[i]! - 1
+  }
   const rtl = cells.some(r => r.some(hasRtl))
   const idx = Array.from({ length: cols }, (_, c) => (rtl ? cols - 1 - c : c))
+  const flush = (line: Line) => (rtl ? [...pad(w - 1 - width(line)), ...line] : line)
   const edge = (l: string, m: string, r: string) => {
-    const s = l + idx.map(c => '─'.repeat(ws[c]! + 2)).join(m) + r
     const line: Line = []
-    toCells(s, DIM, line)
-    return line
+    toCells(l + idx.map(c => '─'.repeat(ws[c]! + 2)).join(m) + r, DIM, line)
+    return flush(line)
   }
   const out: Line[] = [edge('┌', '┬', '┐')]
   cells.forEach((r, n) => {
-    const line: Line = []
-    toCells('│' + BLANK, DIM, line)
-    idx.forEach((c, m) => {
+    const parts = idx.map(c => {
       const cell = (r[c] ?? []).map(x => (n === 0 ? { ...x, s: x.s | BOLD } : x))
-      const gap = ws[c]! - width(cell)
-      if (direction(cell) === 'rtl') line.push(...pad(gap), ...visual(cell))
-      else line.push(...cell, ...pad(gap))
-      toCells(m === cols - 1 ? BLANK + '│' : BLANK + '│' + BLANK, DIM, line)
+      return { c, dir: direction(cell), lines: wrap(cell, ws[c]!) }
     })
-    if (rtl) line.unshift(...pad(w - 1 - width(line)))
-    out.push(line)
+    const height = Math.max(...parts.map(p => p.lines.length))
+    for (let k = 0; k < height; k++) {
+      const line: Line = []
+      toCells('│' + BLANK, DIM, line)
+      parts.forEach((p, m) => {
+        const cell = p.lines[k] ?? []
+        const gap = ws[p.c]! - width(cell)
+        if (p.dir === 'rtl') line.push(...pad(gap), ...visual(cell))
+        else line.push(...cell, ...pad(gap))
+        toCells(m === cols - 1 ? BLANK + '│' : BLANK + '│' + BLANK, DIM, line)
+      })
+      out.push(flush(line))
+    }
     if (n === 0 && cells.length > 1) out.push(edge('├', '┼', '┤'))
   })
   out.push(edge('└', '┴', '┘'))
-  if (rtl) for (const l of [out[0], out[out.length - 1], out[2]]) if (l && l[0]?.t !== ' ') l.unshift(...pad(w - 1 - width(l)))
   return out
 }
 
@@ -340,15 +353,20 @@ export function layout(text: string, w: number, plain = false): Line[] {
   return out
 }
 
-type Props = { text: string; plain?: boolean }
+type Props = { text: string; plain?: boolean; max?: number }
 
 export default function Rtl(props: Props, surface: ClientSurface) {
   const { Box, Text } = surface.elements
-  const w = surface.columns > 0 ? surface.columns : 80
+  // One column short of the region: drawn exactly as wide, the region would
+  // keep that width even where the column is narrower, since its width
+  // follows what it holds. `max` (the window, less the marker) caps the
+  // first draw, before the region is laid out.
+  const max = props.max ?? 200
+  const w = Math.max(10, Math.min(surface.columns > 0 ? surface.columns : max, max) - 1)
   const rows = layout(props.text, w, props.plain === true)
 
   return (
-    <Box flexDirection="column" width="100%">
+    <Box flexDirection="column">
       {rows.map(row => {
         const spans: Line[] = []
         for (const c of row) {

@@ -50,3 +50,10 @@ test('typed prompts are drawn as typed, markdown marks kept', () => {
   const [line] = rows('فونت **Vazir** درست', 40, true)
   expect(line?.includes('**Vazir**')).toBe(true)
 })
+
+test('a table too wide for the column wraps its widest column instead of running past the edge', () => {
+  const long = 'جمع سبد را حساب می‌کند، تخفیف کوپن را کم می‌کند و مبلغ گردشده را برمی‌گرداند'
+  const t = rows(`| تابع | کار |\n|---|---|\n| calcTotal(items, coupon) | ${long} |`, 60)
+  expect(t.every(l => [...l].length <= 60)).toBe(true)
+  expect(t.length > 5).toBe(true)
+})
